@@ -4,12 +4,12 @@ from django.core.exceptions import ValidationError
 
 
 class Users(AbstractUser):
-    email = models.EmailField(blank=True, null=True)
-    observations = models.TextField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True, verbose_name='Endereço de email')
+    observations = models.TextField(blank=True, null=True, verbose_name='Observações')
 
     def clean(self):
         super().clean()
         if self.email:
             email = Users.objects.filter(email=self.email).exclude(pk=self.pk)
             if email.exists():
-                raise ValidationError({'email': 'A user with this email already exists.'})
+                raise ValidationError({'email': 'Já existe um usuário com este e-mail.'})
