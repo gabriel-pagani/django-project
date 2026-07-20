@@ -8,7 +8,7 @@ stop-system:
 	@cd deploy/ && docker compose down
 
 restart-system:
-	@cd deploy/ && docker compose restart
+	@cd deploy/ && docker compose down && docker compose up -d
 
 clean-system:
 	@cd deploy/ && \
