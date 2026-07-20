@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin, GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.models import Group
-from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
-from .models import Users
+from .models import Users, GroupProxy
 
 
 # Users Admin
@@ -40,13 +39,6 @@ class UsersAdmin(UserAdmin):
 
 # Groups Admin
 admin.site.unregister(Group)
-class GroupProxy(Group):
-    class Meta:
-        proxy = True
-        verbose_name = Group._meta.verbose_name
-        verbose_name_plural = Group._meta.verbose_name_plural
-        app_label = 'app'
-
 @admin.register(GroupProxy)
 class GroupsAdmin(BaseGroupAdmin):
     ...
