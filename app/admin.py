@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
-from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import Users
 
 
@@ -13,21 +12,22 @@ class UsersAdmin(UserAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name', 'observations',)
     list_filter = ('is_active', 'is_staff', 'is_superuser', 'groups',)
     filter_horizontal = ('groups', 'user_permissions',)
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
     model = Users
     ordering = ('username',)
     fieldsets = (
         (None, {
-            'fields': ('username', 'first_name', 'last_name', 'email', 'password',)
+            'fields': ('username', 'password',)
         }),
-        ('Permissions', {
+        ('Informações pessoais', {
+            'fields': ('first_name', 'last_name', 'email',)
+        }),
+        ('Permissões', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions',)
         }),
-        ('Dates', {
+        ('Datas importantes', {
             'fields': ('last_login', 'date_joined',)
         }),
-        ('Observations', {
+        ('Observações', {
             'fields': ('observations',)
         }),
     )
