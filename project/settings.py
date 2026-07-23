@@ -105,6 +105,8 @@ STATIC_ROOT = BASE_DIR / 'static_root'
 
 AUTH_USER_MODEL = 'app.Users'
 
+ADMIN_PANEL_PATH = os.getenv('ADMIN_PANEL_PATH', 'admin')
+
 # Auth LDAP
 from django_auth_ldap.config import LDAPSearch, ActiveDirectoryGroupType
 from ldap import SCOPE_SUBTREE
