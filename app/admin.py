@@ -1,19 +1,19 @@
 from django.contrib import admin
 from reversion.admin import VersionAdmin
 import reversion
-from django.contrib.auth.admin import UserAdmin, GroupAdmin as BaseGroupAdmin
-from django.contrib.auth.models import Group
-from .models import Users, GroupProxy
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin, GroupAdmin as BaseGroupAdmin
+from django.contrib.auth.models import Group as BaseGroup
+from .models import User, Group
 
 
-# Users Admin
-@admin.register(Users)
-class UsersAdmin(VersionAdmin, UserAdmin):
+# User Admin
+@admin.register(User)
+class UserAdmin(VersionAdmin, BaseUserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'email', 'last_login', 'date_joined', 'is_staff', 'is_superuser', 'is_active',)
     search_fields = ('username', 'email', 'first_name', 'last_name', 'observations',)
     list_filter = ('is_active', 'is_staff', 'is_superuser', 'groups',)
     filter_horizontal = ('groups', 'user_permissions',)
-    model = Users
+    model = User
     ordering = ('username',)
     fieldsets = (
         (None, {
@@ -39,10 +39,10 @@ class UsersAdmin(VersionAdmin, UserAdmin):
     )
 
 
-# Groups Admin
+# Group Admin
+reversion.register(BaseGroup)
 reversion.register(Group)
-reversion.register(GroupProxy)
-admin.site.unregister(Group)
-@admin.register(GroupProxy)
-class GroupsAdmin(VersionAdmin, BaseGroupAdmin):
+admin.site.unregister(BaseGroup)
+@admin.register(Group)
+class GroupAdmin(VersionAdmin, BaseGroupAdmin):
     ...
