@@ -13,6 +13,8 @@ DEBUG = os.getenv('DEBUG', '0') == '1'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -101,6 +103,15 @@ STATICFILES_DIRS = [
 STATIC_URL = 'static/'
 
 STATIC_ROOT = BASE_DIR / 'static_root'
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage',
+    },
+}
 
 MEDIA_URL = 'media/'
 
