@@ -14,7 +14,7 @@ reset-system:
 	@cd deploy/ && docker compose down -v && rm -rf ../database/ certbot/ && docker compose up -d --build
 
 clean-system:
-	@cd deploy/ && docker compose down -v && docker system prune -a --volumes --force && cd .. && sudo rm -rf database/ deploy/certbot/
+	@cd deploy/ && docker compose down -v && docker system prune -a --volumes --force && cd .. && rm -rf database/ deploy/certbot/
 
 create-superuser:
 	@cd deploy/ && \
