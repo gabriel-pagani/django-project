@@ -68,6 +68,10 @@ DATABASES = {
     }
 }
 
+PASSWORD_HASHERS = [
+    "project.hashers.CustomArgon2PasswordHasher",
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -85,7 +89,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'django_auth_ldap.backend.LDAPBackend',
+    # 'django_auth_ldap.backend.LDAPBackend',
 ]
 
 LANGUAGE_CODE = 'pt-br'
