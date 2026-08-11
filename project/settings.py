@@ -71,6 +71,13 @@ DATABASES = {
     }
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://redis:6379/0'),
+    }
+}
+
 PASSWORD_HASHERS = [
     "project.hashers.CustomArgon2PasswordHasher",
 ]
@@ -119,6 +126,10 @@ LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
+
+USE_L10N = True
+
+USE_THOUSAND_SEPARATOR = True
 
 USE_TZ = True
 
