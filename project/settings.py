@@ -156,6 +156,12 @@ MEDIA_ROOT = BASE_DIR / 'media_root'
 
 AUTH_USER_MODEL = 'app.User'
 
+SESSION_COOKIE_AGE = 60 * 60 * 24
+
+SESSION_SAVE_EVERY_REQUEST = True
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
 ADMIN_PANEL_PATH = os.getenv('ADMIN_PANEL_PATH', 'admin')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
