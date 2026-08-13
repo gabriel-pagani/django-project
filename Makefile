@@ -15,7 +15,7 @@ reset-system:
 
 backup-database:
 	@mkdir -p backups
-	@FILE="backups/finflow-$$(date +%Y%m%d-%H%M%S).sql"; \
+	@FILE="backups/$$(date +%Y%m%d-%H%M%S).sql"; \
 	docker compose -f deploy/docker-compose.yml exec -T postgres sh -c 'pg_dump -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" --no-owner --no-privileges' > "$$FILE.tmp" \
 		&& mv "$$FILE.tmp" "$$FILE" || { rm -f "$$FILE.tmp"; exit 1; }
 
