@@ -34,6 +34,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'project.middleware.PermissionsPolicyMiddleware',
     'django.middleware.csp.ContentSecurityPolicyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -183,9 +184,9 @@ SECURE_CSP = {
     'font-src': [CSP.SELF],
     'connect-src': [CSP.SELF],
     'form-action': [CSP.SELF],
-    'frame-ancestors': [CSP.SELF],
+    'frame-ancestors': [CSP.NONE],
     'base-uri': [CSP.SELF],
-    'object-src': [CSP.SELF],
+    'object-src': [CSP.NONE],
 }
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

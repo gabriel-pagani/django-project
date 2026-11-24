@@ -59,6 +59,7 @@ services:
     build:
       context: ../
       dockerfile: deploy/Dockerfile
+      target: production
     image: ${PROJECT_NAME}-django
     expose:
       - "8000"
@@ -122,6 +123,7 @@ services:
     build:
       context: ../
       dockerfile: deploy/Dockerfile
+      target: production
     image: ${PROJECT_NAME}-django
     env_file:
       - .env
@@ -130,6 +132,29 @@ services:
     networks:
       - backend
       - frontend
+
+  tests:
+    build:
+      context: ../
+      dockerfile: deploy/Dockerfile
+      target: test
+    image: ${PROJECT_NAME}-django-tests
+    volumes:
+      - ../app:/app/app
+      - ../project:/app/project
+      - ../templates:/app/templates
+      - ../static:/app/static
+      - ../tests:/app/tests
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: python -m pytest -vv
+    profiles:
+      - tests
+    networks:
+      - backend
 
   nginx:
     image: nginx:1.30-alpine

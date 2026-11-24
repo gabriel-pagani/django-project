@@ -90,6 +90,10 @@ create-app-role:
 make-migrations:
 	@$(COMPOSE) run --rm --no-deps -v "$(PWD)/app:/app/app" django python manage.py makemigrations $(app)
 
+# Depois que o requirements.txt muda: $(COMPOSE) build tests
+run-tests:
+	@$(COMPOSE) run --rm tests python -m pytest -vv $(args)
+
 create-superuser:
 	@$(COMPOSE) exec django python manage.py createsuperuser
 	@$(COMPOSE) exec -T django python manage.py shell < scripts/create_totp.py
