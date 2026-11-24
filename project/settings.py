@@ -291,7 +291,8 @@ AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
     "(objectClass=group)"
 )
 
+# Superusuário não vem do AD: quem entrasse no grupo (ou mexesse nele) ganharia
+# acesso total ao sistema no próximo login. Ele é marcado à mão, no admin.
 AUTH_LDAP_USER_FLAGS_BY_GROUP = {
-    "is_staff": [os.getenv('STAFF_GROUP_DN'), os.getenv('ADMIN_GROUP_DN')],
-    "is_superuser": os.getenv('ADMIN_GROUP_DN'),
+    "is_staff": os.getenv('STAFF_GROUP_DN'),
 }
