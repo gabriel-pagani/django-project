@@ -1,5 +1,5 @@
 """
-Com DEBUG desligado, os erros do Django aparecem no log do container.
+Com DEBUG desligado, os erros do Django aparecem no log do container e chegam por e-mail aos ADMINS.
 """
 import logging
 from unittest.mock import patch
@@ -17,3 +17,11 @@ def test_inicio_do_axes_nao_vai_para_o_log():
     # Um comando agendado carrega o Django a cada execução; o anúncio do axes entupiria o log.
     assert not logging.getLogger('axes.apps').isEnabledFor(logging.INFO)
     assert logging.getLogger('axes.handlers').isEnabledFor(logging.INFO)
+
+
+def test_erro_500_vai_por_email_aos_admins(settings, mailoutbox):
+    settings.ADMINS = ['eu@example.com']
+    logging.getLogger('django.request').error('Internal Server Error: /x')
+    assert len(mailoutbox) == 1
+    assert mailoutbox[0].to == ['eu@example.com']
+    assert mailoutbox[0].from_email == settings.DEFAULT_FROM_EMAIL

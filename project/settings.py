@@ -176,6 +176,30 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 ADMIN_PANEL_PATH = os.getenv('ADMIN_PANEL_PATH', 'admin')
 
+# As variáveis EMAIL_* do .env continuam com os nomes de antes. As opções são
+# do SMTP: com MAILERS, outro backend (console, locmem) recusa o que não conhece.
+# Os auxiliares ficam em minúsculas: EMAIL_* maiúsculo junto do MAILERS dá ImproperlyConfigured.
+smtp_backend = 'django.core.mail.backends.smtp.EmailBackend'
+email_backend = os.getenv('EMAIL_BACKEND', smtp_backend)
+MAILERS = {'default': {'BACKEND': email_backend}}
+if email_backend == smtp_backend:
+    MAILERS['default']['OPTIONS'] = {
+        'host': os.getenv('EMAIL_HOST', ''),
+        'port': int(os.getenv('EMAIL_PORT', '587')),
+        'username': os.getenv('EMAIL_HOST_USER', ''),
+        'password': os.getenv('EMAIL_HOST_PASSWORD', ''),
+        'use_tls': os.getenv('EMAIL_USE_TLS', '1') == '1',
+        'timeout': int(os.getenv('EMAIL_TIMEOUT', '10')),
+    }
+
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@localhost')
+
+# Recebem por e-mail cada erro 500 (lista separada por vírgula).
+ADMINS = [email.strip() for email in os.getenv('ADMINS', '').split(',') if email.strip()]
+
+# Remetente desses e-mails; o padrão root@localhost costuma ser recusado pelo SMTP.
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
 # Com DEBUG desligado, o handler de console do Django só escreve em DEBUG e o
 # mail_admins só manda se houver ADMINS: sem isto, os 500 e os avisos do
 # django.security não aparecem em lugar nenhum. O logger django propaga para o root.
