@@ -87,6 +87,10 @@ restore-database:
 create-app-role:
 	@$(COMPOSE) run --rm --no-deps -T -v "$(PWD)/scripts:/app/scripts" tools python scripts/create_app_role.py
 
+# Desafio da Cloudflare nas telas de entrada; args=remove desfaz.
+protect-login:
+	@$(COMPOSE) run --rm --no-deps -T -v "$(PWD)/scripts:/app/scripts" tools python scripts/cloudflare_login_rule.py $(args)
+
 make-migrations:
 	@$(COMPOSE) run --rm --no-deps -v "$(PWD)/app:/app/app" django python manage.py makemigrations $(app)
 

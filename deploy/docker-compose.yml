@@ -151,7 +151,7 @@ services:
     restart: unless-stopped
     logging: *logging
 
-  # Scripts de manutenção (make create-app-role) precisam de segredos que o app
+  # Scripts de manutenção (make create-app-role, make protect-login) precisam de segredos que o app
   # não recebe; só sobem quando chamados.
   tools:
     build:
