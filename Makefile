@@ -92,10 +92,10 @@ make-migrations:
 
 create-superuser:
 	@$(COMPOSE) exec django python manage.py createsuperuser
-	@$(COMPOSE) exec -T django python manage.py shell < app/utils/create_totp.py
+	@$(COMPOSE) exec -T django python manage.py shell < scripts/create_totp.py
 
 create-totp:
-	@$(COMPOSE) exec -T -e TOTP_USER="$(user)" django python manage.py shell < app/utils/create_totp.py
+	@$(COMPOSE) exec -T -e TOTP_USER="$(user)" django python manage.py shell < scripts/create_totp.py
 
 container-terminal:
 	@$(COMPOSE) exec $(container) sh
