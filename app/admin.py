@@ -7,6 +7,9 @@ from .models import User, Group
 
 
 # User Admin
+# Registrado antes do VersionAdmin, que senão registraria todos os campos: o
+# histórico guardaria o hash da senha, e reverter devolveria a senha antiga.
+reversion.register(User, exclude=('password', 'last_login'))
 @admin.register(User)
 class UserAdmin(VersionAdmin, BaseUserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'email', 'last_login', 'is_staff', 'is_superuser', 'is_active',)
