@@ -18,6 +18,8 @@ def test_com_servidor_o_ldap_entra_por_ultimo(monkeypatch):
     assert runpy.run_path(str(SETTINGS))['AUTHENTICATION_BACKENDS'][-1] == LDAP
 
 
-def test_grupo_do_ad_nao_da_superusuario(monkeypatch):
+def test_grupo_de_admin_do_ad_da_superusuario(monkeypatch):
+    monkeypatch.setenv('ADMIN_GROUP_DN', 'cn=admins,dc=exemplo,dc=com')
     flags = runpy.run_path(str(SETTINGS))['AUTH_LDAP_USER_FLAGS_BY_GROUP']
-    assert 'is_superuser' not in flags
+    assert flags['is_superuser'] == 'cn=admins,dc=exemplo,dc=com'
+    assert 'cn=admins,dc=exemplo,dc=com' in flags['is_staff']
