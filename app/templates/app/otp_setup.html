@@ -1,0 +1,32 @@
+{% extends 'global/global.html' %}
+
+{% block title %}Verificação em Duas Etapas{% endblock title %}
+
+{% block body %}
+<main>
+  <h1>Verificação em Duas Etapas</h1>
+
+  <p>Escaneie o QR Code no aplicativo autenticador e digite o código que ele mostrar.</p>
+
+  <div class="otp-qr">{{ qr }}</div>
+
+  <p>
+    Sem câmera? Digite esta chave no aplicativo:<br>
+    <code>{{ secret }}</code>
+  </p>
+
+  <form method="post" action="{% url 'app:otp-setup' %}" novalidate>
+    {% csrf_token %}
+    <label for="codigo">Código do aplicativo</label>
+    <input type="text" name="token" id="codigo" inputmode="numeric"
+      autocomplete="one-time-code" maxlength="8" spellcheck="false" autofocus />
+
+    <button type="submit">Ativar</button>
+  </form>
+
+  <form method="post" action="{% url 'app:logout' %}">
+    {% csrf_token %}
+    <button type="submit">Sair</button>
+  </form>
+</main>
+{% endblock body %}

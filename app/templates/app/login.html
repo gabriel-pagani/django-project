@@ -1,0 +1,21 @@
+{% extends 'global/global.html' %}
+
+{% block title %}Login{% endblock title %}
+
+{% block body %}
+<main>
+  <h1>Entrar</h1>
+
+  <form method="post" action="{% url 'app:login' %}" novalidate>
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+    <label for="usuario">Usuário</label>
+    <input type="text" name="username" id="usuario" autocomplete="username" value="{{ form.username.value|default_if_none:'' }}" autofocus />
+
+    <label for="senha">Senha</label>
+    <input type="password" name="password" id="senha" autocomplete="current-password" />
+
+    <button type="submit">Entrar</button>
+  </form>
+</main>
+{% endblock body %}

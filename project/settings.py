@@ -41,6 +41,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_otp.middleware.OTPMiddleware',
+    'project.middleware.RequireOTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'axes.middleware.AxesMiddleware',
@@ -171,6 +172,8 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media_root'
 
 AUTH_USER_MODEL = 'app.User'
+
+LOGIN_URL = 'app:login'
 
 SESSION_COOKIE_AGE = 60 * 60 * 24
 

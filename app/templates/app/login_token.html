@@ -1,0 +1,21 @@
+{% extends 'global/global.html' %}
+
+{% block title %}Verificação{% endblock title %}
+
+{% block body %}
+<main>
+  <h1>Verificação</h1>
+
+  <form method="post" action="{% url 'app:login-token' %}" novalidate>
+    {% csrf_token %}
+    <label for="codigo">Código do aplicativo</label>
+    <input type="text" name="token" id="codigo" inputmode="numeric"
+      autocomplete="one-time-code" maxlength="8" spellcheck="false" autofocus />
+
+    <button type="submit">Entrar</button>
+  </form>
+
+  {% comment %}Voltar recomeça: a tela da senha descarta a espera do código.{% endcomment %}
+  <p><a href="{% url 'app:login' %}">Voltar</a></p>
+</main>
+{% endblock body %}
