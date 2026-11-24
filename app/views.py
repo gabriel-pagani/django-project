@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from app.forms import LoginForm
 from app.models import User
-from app.utils import otp
+from app.utils import otp, throttle
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
@@ -28,11 +28,11 @@ PENDING_LOGIN_TIMEOUT = timedelta(minutes=5)
 
 
 def login_throttled(request, username):
-    # A recusa por teto de tentativas chega igual à de senha errada: o axes
-    # interrompe a fila de backends, e o authenticate devolve None. Quem espera
-    # uma hora precisa saber por quê, e saber que o teto estourou não conta nada
-    # sobre a conta que já não se soubesse.
-    return not AxesProxyHandler.is_allowed(request, {'username': username})
+    # A recusa por teto de tentativas chega igual à de senha errada: os dois
+    # tetos interrompem a fila de backends, e o authenticate devolve None.
+    # Quem espera uma hora precisa saber por quê, e saber que o teto estourou
+    # não conta nada sobre a conta que já não se soubesse.
+    return throttle.login_blocked(username) or not AxesProxyHandler.is_allowed(request, {'username': username})
 
 
 def get_safe_next_url(request, next_url):
