@@ -176,6 +176,19 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 ADMIN_PANEL_PATH = os.getenv('ADMIN_PANEL_PATH', 'admin')
 
+# Com DEBUG desligado, o handler de console do Django só escreve em DEBUG e o
+# mail_admins só manda se houver ADMINS: sem isto, os 500 e os avisos do
+# django.security não aparecem em lugar nenhum. O logger django propaga para o root.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'root': {'handlers': ['console'], 'level': 'INFO'},
+    # O axes anuncia a configuração a cada vez que o Django carrega: num comando
+    # agendado, seria uma linha a cada execução.
+    'loggers': {'axes.apps': {'level': 'WARNING'}},
+}
+
 SECURE_CSP = {
     'default-src': [CSP.SELF],
     'script-src': [CSP.SELF],
