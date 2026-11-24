@@ -1,5 +1,11 @@
 name: ${PROJECT_NAME}
 
+# O json-file do Docker cresce sem limite; o gunicorn e o nginx registram cada acesso.
+x-logging: &logging
+  options:
+    max-size: 10m
+    max-file: "5"
+
 services:
   postgres:
     image: postgres:18
@@ -17,6 +23,7 @@ services:
     networks:
       - backend
     restart: unless-stopped
+    logging: *logging
 
   redis:
     image: redis:8-alpine
@@ -42,6 +49,7 @@ services:
     networks:
       - backend
     restart: unless-stopped
+    logging: *logging
 
   django:
     build:
@@ -75,6 +83,7 @@ services:
       - backend
       - frontend
     restart: unless-stopped
+    logging: *logging
 
   nginx:
     image: nginx:1.30-alpine
@@ -95,6 +104,7 @@ services:
     networks:
       - frontend
     restart: unless-stopped
+    logging: *logging
 
   cloudflare:
     image: cloudflare/cloudflared:latest
@@ -107,6 +117,7 @@ services:
     networks:
       - frontend
     restart: unless-stopped
+    logging: *logging
 
 volumes:
   static_volume:
