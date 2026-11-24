@@ -13,8 +13,12 @@ services:
       - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql
-    env_file:
-      - .env
+    # Cada serviço recebe só o que usa. Variável sem valor vem do .env ao lado
+    # e, se não estiver lá, fica de fora (o padrão do settings continua valendo).
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
       interval: 5s
@@ -61,8 +65,28 @@ services:
     volumes:
       - static_volume:/app/static_root
       - media_volume:/app/media_root
-    env_file:
-      - .env
+    # Sem os tokens da Cloudflare: quem invadisse o app não leva o túnel.
+    # Variável nova do settings precisa entrar nesta lista.
+    environment:
+      - SECRET_KEY
+      - DEBUG
+      - ALLOWED_HOSTS
+      - CSRF_TRUSTED_ORIGINS
+      - ADMIN_PANEL_PATH
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - REDIS_URL
+      - REDIS_PASSWORD
+      - AUTH_LDAP_SERVER_URI
+      - AUTH_LDAP_BIND_DN
+      - AUTH_LDAP_BIND_PASSWORD
+      - AUTH_LDAP_USER_SEARCH
+      - AUTH_LDAP_GROUP_SEARCH
+      - STAFF_GROUP_DN
+      - ADMIN_GROUP_DN
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,6 +101,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+    # O app roda como usuário comum numa porta alta e não usa nenhuma capability.
+    # Sem elas e sem setuid, quem rodasse código aqui não vira root no container.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     # O único na frente e atrás: o proxy fala com ele, e ele com o banco. A rede
     # da frente também é a saída dele para a internet.
     networks:
