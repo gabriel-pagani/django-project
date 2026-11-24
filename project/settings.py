@@ -202,23 +202,32 @@ if email_backend == smtp_backend:
 
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@localhost')
 
-# Recebem por e-mail cada erro 500 (lista separada por vírgula).
-ADMINS = [email.strip() for email in os.getenv('ADMINS', '').split(',') if email.strip()]
-
 # Remetente desses e-mails; o padrão root@localhost costuma ser recusado pelo SMTP.
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Com DEBUG desligado, o handler de console do Django só escreve em DEBUG e o
-# mail_admins só manda se houver ADMINS: sem isto, os 500 e os avisos do
-# django.security não aparecem em lugar nenhum. O logger django propaga para o root.
+# mail_admins do Django só manda para o ADMINS: sem isto, os 500 e os avisos do
+# django.security não aparecem em lugar nenhum. O logger django propaga para o root,
+# e os 500 vão por e-mail a quem é superusuário e equipe no cadastro.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'filters': {'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse'}},
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'app.utils.admin_email.SuperuserEmailHandler',
+        },
+    },
     'root': {'handlers': ['console'], 'level': 'INFO'},
-    # O axes anuncia a configuração a cada vez que o Django carrega: num comando
-    # agendado, seria uma linha a cada execução.
-    'loggers': {'axes.apps': {'level': 'WARNING'}},
+    'loggers': {
+        'django': {'handlers': ['mail_admins'], 'level': 'INFO'},
+        # O axes anuncia a configuração a cada vez que o Django carrega: num comando
+        # agendado, seria uma linha a cada execução.
+        'axes.apps': {'level': 'WARNING'},
+    },
 }
 
 SECURE_CSP = {

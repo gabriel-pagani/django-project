@@ -15,7 +15,7 @@ O que já vem pronto:
 - Cabeçalhos de segurança (CSP, Permissions-Policy, HSTS), cookies `__Host-` e Redis com senha.
 - Banco e Redis numa rede interna, que o nginx e o túnel não alcançam.
 - O app entra no banco com um usuário do Postgres sem poder de superusuário.
-- Erros 500 no log dos containers e por e-mail para os administradores.
+- Erros 500 no log dos containers e por e-mail para quem é superusuário e equipe no cadastro.
 - Backups com conferência de restauração, tarefas agendadas e testes no Docker e no CI.
 - Deploy automático pelo GitHub Actions e atualizações de dependências pelo Dependabot.
 
@@ -82,7 +82,6 @@ No Windows, use o Git Bash para rodar o `make`.
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID` | Só para o `make protect-login` ([desafio no login](#cloudflare-desafio-no-login-waf)). Deixe vazio se não for usar. |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `EMAIL_TIMEOUT` | Servidor SMTP. Para não enviar nada de verdade, acrescente `EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"`, que só escreve os e-mails no log. |
 | `DEFAULT_FROM_EMAIL` | Remetente dos e-mails do sistema, inclusive os de erro. |
-| `ADMINS` | E-mails que recebem cada erro 500, separados por vírgula. Vazio = nenhum e-mail. |
 | `AUTH_LDAP_*`, `STAFF_GROUP_DN` | Login pelo Active Directory ([Active Directory](#active-directory-opcional)). O `AUTH_LDAP_SERVER_URI` vem vazio, com o AD desligado. **Só preencha se for usar AD:** com qualquer valor ali, o login tenta o AD. |
 
 > **Variável nova no `settings.py`:** acrescente-a também à lista `environment` do serviço `django` no [deploy/docker-compose.yml](deploy/docker-compose.yml). Cada serviço recebe só as variáveis listadas para ele, e o que não está na lista não chega ao container.

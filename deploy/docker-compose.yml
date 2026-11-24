@@ -90,7 +90,6 @@ services:
       - EMAIL_USE_TLS
       - EMAIL_TIMEOUT
       - DEFAULT_FROM_EMAIL
-      - ADMINS
       - AUTH_LDAP_SERVER_URI
       - AUTH_LDAP_BIND_DN
       - AUTH_LDAP_BIND_PASSWORD
