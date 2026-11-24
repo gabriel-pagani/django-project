@@ -87,3 +87,28 @@ jobs:
 
       - name: Run tests
         run: pytest -vv
+
+  # Roda no próprio servidor, por um runner self-hosted: o sistema não tem porta
+  # aberta para o GitHub alcançar. Só no push para a main, e nunca em pull
+  # request, que executaria no servidor código ainda não revisado. Em repositório
+  # público, exija aprovação para workflows de colaboradores externos: um PR de
+  # fork pode trocar o runs-on de outro job para o runner do servidor.
+  #
+  # Desligado até o repositório ter as variáveis DEPLOY_PATH (a pasta do projeto
+  # no servidor) e RUNNER_LABEL (a label própria dada ao runner no config.sh).
+  deploy:
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_PATH != '' && vars.RUNNER_LABEL != ''
+    runs-on: [self-hosted, "${{ vars.RUNNER_LABEL }}"]
+    concurrency: deploy
+    steps:
+      - name: Update code and rebuild
+        working-directory: ${{ vars.DEPLOY_PATH }}
+        run: |
+          git pull --ff-only
+          make build-system
+
+      # O build-system acabou de gerar um backup: confere se ele restaura.
+      - name: Check backup
+        working-directory: ${{ vars.DEPLOY_PATH }}
+        run: make check-backup
