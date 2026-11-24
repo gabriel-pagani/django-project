@@ -1,0 +1,7 @@
+# Tarefas do serviço scheduler (supercronic). O container roda em UTC; os
+# horários abaixo são de Brasília, como o resto do app.
+# Tarefa nova = uma linha aqui.
+CRON_TZ=America/Sao_Paulo
+
+# Apaga do log de acesso do axes o que tem mais de 30 dias.
+0 3 * * * python manage.py axes_reset_logs --age 30
