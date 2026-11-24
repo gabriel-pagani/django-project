@@ -25,6 +25,9 @@ reset-system-cache:
 clean-system:
 	@make backup-database && docker compose -f deploy/docker-compose.yml down -v && docker system prune -a --volumes --force
 
+create-app-role:
+	@docker compose -f deploy/docker-compose.yml run --rm --no-deps -T -v "$(PWD)/scripts:/app/scripts" tools python scripts/create_app_role.py
+
 make-migrations:
 	@docker compose -f deploy/docker-compose.yml run --rm --no-deps -v "$(PWD)/app:/app/app" django python manage.py makemigrations $(app)
 
