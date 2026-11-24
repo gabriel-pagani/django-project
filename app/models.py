@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group as BaseGroup
-from django.core.exceptions import ValidationError
+from django.db.models.functions import Lower
 
 
 class User(AbstractUser):
@@ -9,10 +9,20 @@ class User(AbstractUser):
 
     def clean(self):
         super().clean()
-        if self.email:
-            email = User.objects.filter(email=self.email).exclude(pk=self.pk)
-            if email.exists():
-                raise ValidationError({'email': 'Já existe um usuário com este e-mail.'})
+        # Vazio vira nulo para não colidir na regra de único.
+        self.email = self.email or None
+
+    class Meta(AbstractUser.Meta):
+        # No banco, e não numa consulta no clean(): dois cadastros ao mesmo tempo
+        # passariam os dois pela consulta.
+        constraints = [
+            models.UniqueConstraint(
+                Lower('email'),
+                condition=models.Q(email__isnull=False) & ~models.Q(email=''),
+                name='user_unique_email_case_insensitive',
+                violation_error_message='Já existe um usuário com este e-mail.',
+            ),
+        ]
 
 
 class Group(BaseGroup):
