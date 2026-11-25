@@ -17,5 +17,6 @@ pycparser==3.12
 PyJWT==2.15.1
 python-ldap==3.4.8
 redis==8.1.0
+reportlab==5.1.0
 sqlparse==0.6.1
 tzdata==2026.6

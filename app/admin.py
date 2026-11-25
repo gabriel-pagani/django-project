@@ -1,9 +1,12 @@
 from django.contrib import admin, messages
+from django.http import HttpResponse
+from django.utils import timezone
 from reversion.admin import VersionAdmin
 import reversion
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin, GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.models import Group as BaseGroup
 from .models import User, Group
+from .utils.permissions_report import permissions_report_pdf, user_permissions_report
 
 
 # User Admin
@@ -18,7 +21,7 @@ class UserAdmin(VersionAdmin, BaseUserAdmin):
     filter_horizontal = ('groups', 'user_permissions',)
     model = User
     ordering = ('username',)
-    actions = ('deactivate_users',)
+    actions = ('deactivate_users', 'permissions_report',)
     fieldsets = (
         (None, {
             'fields': ('username', 'password',)
@@ -46,6 +49,17 @@ class UserAdmin(VersionAdmin, BaseUserAdmin):
     def deactivate_users(self, request, queryset):
         updated = queryset.filter(is_active=True).update(is_active=False)
         self.message_user(request, f'{updated} usuário(s) desativado(s) com sucesso.', messages.SUCCESS)
+
+    @admin.action(description='Gerar relatório de permissões dos usuários selecionados')
+    def permissions_report(self, request, queryset):
+        pdf = permissions_report_pdf(
+            user_permissions_report(queryset),
+            request.user.get_full_name() or request.user.username,
+        )
+        file_name = f'relatorio-permissoes-{timezone.localtime():%Y%m%d-%H%M}.pdf'
+        return HttpResponse(pdf, content_type='application/pdf', headers={
+            'Content-Disposition': f'attachment; filename="{file_name}"',
+        })
 
 
 # Group Admin

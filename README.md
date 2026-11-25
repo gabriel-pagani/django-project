@@ -16,6 +16,7 @@ O que já vem pronto:
 - Banco e Redis numa rede interna, que o nginx e o túnel não alcançam.
 - O app entra no banco com um usuário do Postgres sem poder de superusuário.
 - Erros 500 no log dos containers e por e-mail para quem é superusuário e equipe no cadastro.
+- No painel, ações para desativar usuários em lote e gerar um PDF com as permissões de cada um e de onde elas vêm.
 - Backups com conferência de restauração, tarefas agendadas e testes no Docker e no CI.
 - Deploy automático pelo GitHub Actions e atualizações de dependências pelo Dependabot.
 
