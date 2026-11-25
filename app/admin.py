@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from reversion.admin import VersionAdmin
 import reversion
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin, GroupAdmin as BaseGroupAdmin
@@ -18,6 +18,7 @@ class UserAdmin(VersionAdmin, BaseUserAdmin):
     filter_horizontal = ('groups', 'user_permissions',)
     model = User
     ordering = ('username',)
+    actions = ('deactivate_users',)
     fieldsets = (
         (None, {
             'fields': ('username', 'password',)
@@ -40,6 +41,11 @@ class UserAdmin(VersionAdmin, BaseUserAdmin):
             'fields': ('username', 'password1', 'password2',),
         }),
     )
+
+    @admin.action(description='Desativar usuários selecionados')
+    def deactivate_users(self, request, queryset):
+        updated = queryset.filter(is_active=True).update(is_active=False)
+        self.message_user(request, f'{updated} usuário(s) desativado(s) com sucesso.', messages.SUCCESS)
 
 
 # Group Admin
