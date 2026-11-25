@@ -1,3 +1,4 @@
+import unicodedata
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.utils import timezone
@@ -9,14 +10,31 @@ from .models import User, Group
 from .utils.permissions_report import permissions_report_pdf, user_permissions_report
 
 
+def without_accents(text):
+    # O unaccent do banco tira o acento da coluna; o termo digitado chega como
+    # veio. Sem limpar os dois lados, procurar "José" deixaria de encontrar o
+    # próprio "José".
+    return ''.join(
+        letter for letter in unicodedata.normalize('NFD', text)
+        if not unicodedata.combining(letter)
+    )
+
+
+class UnaccentSearchAdmin(admin.ModelAdmin):
+    """Busca que ignora acento, nos campos marcados com __unaccent."""
+
+    def get_search_results(self, request, queryset, search_term):
+        return super().get_search_results(request, queryset, without_accents(search_term))
+
+
 # User Admin
 # Registrado antes do VersionAdmin, que senão registraria todos os campos: o
 # histórico guardaria o hash da senha, e reverter devolveria a senha antiga.
 reversion.register(User, exclude=('password', 'last_login'))
 @admin.register(User)
-class UserAdmin(VersionAdmin, BaseUserAdmin):
+class UserAdmin(VersionAdmin, UnaccentSearchAdmin, BaseUserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'email', 'last_login', 'is_staff', 'is_superuser', 'is_active',)
-    search_fields = ('username', 'email', 'first_name', 'last_name', 'observations',)
+    search_fields = ('username', 'email', 'first_name__unaccent', 'last_name__unaccent', 'observations__unaccent',)
     list_filter = ('is_active', 'is_staff', 'is_superuser', 'groups',)
     filter_horizontal = ('groups', 'user_permissions',)
     model = User
@@ -67,5 +85,5 @@ reversion.register(BaseGroup)
 reversion.register(Group)
 admin.site.unregister(BaseGroup)
 @admin.register(Group)
-class GroupAdmin(VersionAdmin, BaseGroupAdmin):
-    ...
+class GroupAdmin(VersionAdmin, UnaccentSearchAdmin, BaseGroupAdmin):
+    search_fields = ('name__unaccent',)
