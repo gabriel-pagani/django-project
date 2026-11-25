@@ -8,6 +8,8 @@ continua entrando só com a senha.
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth import BACKEND_SESSION_KEY
+from django.contrib.auth.backends import ModelBackend
 from django.urls import reverse
 from django.utils import timezone
 from django_otp import DEVICE_ID_SESSION_KEY
@@ -162,6 +164,25 @@ def test_next_survives_both_steps(client, staff):
     enter(client, staff, next=reverse('admin:index'))
 
     assert confirm(client, code(device)).url == reverse('admin:index')
+
+
+# Faz o papel do LDAP, que nos testes não tem servidor para conferir a senha.
+class OtherBackend(ModelBackend):
+    pass
+
+
+def test_session_stays_with_the_backend_that_checked_the_password(client, settings, staff):
+    other = f'{__name__}.OtherBackend'
+    settings.AUTHENTICATION_BACKENDS = [
+        other if backend == 'django.contrib.auth.backends.ModelBackend' else backend
+        for backend in settings.AUTHENTICATION_BACKENDS
+    ]
+    device = TOTPDevice.objects.create(user=staff, name='default', confirmed=True)
+    enter(client, staff)
+
+    confirm(client, code(device))
+
+    assert client.session[BACKEND_SESSION_KEY] == other
 
 
 # Cadastro ----------------------------------------------------------------
