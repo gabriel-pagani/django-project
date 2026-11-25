@@ -80,3 +80,27 @@ def test_axes_blocks_the_pair_after_the_failure_limit(client, settings, user):
 
     assert messages_of(response) == [LOGIN_THROTTLED_ERROR]
     assert client.session.get('_auth_user_id') is None
+
+
+@pytest.mark.django_db
+def test_empty_form_asks_to_fill_the_fields(client, user):
+    response = attempt(client, username='', password='')
+    assert messages_of(response) == ['Preencha todos os campos!']
+
+
+# Sem a conferência, um link de phishing com o login de verdade levaria a
+# pessoa, já autenticada, para o site de quem montou o link.
+@pytest.mark.django_db
+def test_next_to_another_site_is_ignored(client, user):
+    response = client.post(reverse('app:login'), {
+        'username': 'operador', 'password': 'senha', 'next': 'https://evil.example/',
+    })
+    assert response.url == reverse('app:home')
+
+
+@pytest.mark.django_db
+def test_next_inside_the_system_is_followed(client, user):
+    response = client.post(reverse('app:login'), {
+        'username': 'operador', 'password': 'senha', 'next': reverse('admin:index'),
+    })
+    assert response.url == reverse('admin:index')
