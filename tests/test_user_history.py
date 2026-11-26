@@ -17,3 +17,5 @@ def test_historico_do_usuario_nao_guarda_a_senha():
     assert data['username'] == 'ana'
     assert 'password' not in data
     assert 'last_login' not in data
+    # Reverter uma versão antiga ressuscitaria as sessões já derrubadas
+    assert 'session_version' not in data

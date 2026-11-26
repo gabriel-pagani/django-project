@@ -1,5 +1,7 @@
 import unicodedata
 from django.contrib import admin, messages
+from django.contrib.auth import update_session_auth_hash
+from django.db.models import F
 from django.http import HttpResponse
 from django.utils import timezone
 from reversion.admin import VersionAdmin
@@ -30,7 +32,9 @@ class UnaccentSearchAdmin(admin.ModelAdmin):
 # User Admin
 # Registrado antes do VersionAdmin, que senão registraria todos os campos: o
 # histórico guardaria o hash da senha, e reverter devolveria a senha antiga.
-reversion.register(User, exclude=('password', 'last_login'))
+# O session_version também fica de fora: reverter uma versão antiga devolveria
+# um número velho, e as sessões já derrubadas voltariam a valer.
+reversion.register(User, exclude=('password', 'last_login', 'session_version'))
 @admin.register(User)
 class UserAdmin(VersionAdmin, UnaccentSearchAdmin, BaseUserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'email', 'last_login', 'is_staff', 'is_superuser', 'is_active',)
@@ -39,7 +43,7 @@ class UserAdmin(VersionAdmin, UnaccentSearchAdmin, BaseUserAdmin):
     filter_horizontal = ('groups', 'user_permissions',)
     model = User
     ordering = ('username',)
-    actions = ('deactivate_users', 'permissions_report',)
+    actions = ('deactivate_users', 'logout_users', 'permissions_report',)
     fieldsets = (
         (None, {
             'fields': ('username', 'password',)
@@ -67,6 +71,15 @@ class UserAdmin(VersionAdmin, UnaccentSearchAdmin, BaseUserAdmin):
     def deactivate_users(self, request, queryset):
         updated = queryset.filter(is_active=True).update(is_active=False)
         self.message_user(request, f'{updated} usuário(s) desativado(s) com sucesso.', messages.SUCCESS)
+
+    @admin.action(description='Deslogar usuários selecionados')
+    def logout_users(self, request, queryset):
+        updated = queryset.update(session_version=F('session_version') + 1)
+        # Quem seleciona a si mesmo encerra as outras sessões, não a que está usando
+        if queryset.filter(pk=request.user.pk).exists():
+            request.user.refresh_from_db(fields=['session_version'])
+            update_session_auth_hash(request, request.user)
+        self.message_user(request, f'{updated} usuário(s) deslogado(s) com sucesso.', messages.SUCCESS)
 
     @admin.action(description='Gerar relatório de permissões dos usuários selecionados')
     def permissions_report(self, request, queryset):

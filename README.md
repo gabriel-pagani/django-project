@@ -202,6 +202,7 @@ O supercronic, no [deploy/Dockerfile](deploy/Dockerfile), está fixo numa versã
 
 O painel de administração (`/<ADMIN_PANEL_PATH>/`) passa pela mesma tela de login e exige o código.
 
+- **Tirar alguém do sistema na hora:** no painel, selecione o usuário e use a ação *Deslogar usuários selecionados*. Todas as sessões dele caem, em qualquer computador, e ele pode entrar de novo com a senha. Para impedir que volte, use *Desativar usuários selecionados*.
 - **Trocar de celular:** no painel, apague o dispositivo da pessoa em *TOTP devices*. No próximo login, ela cadastra o aplicativo de novo. Pelo terminal, a mesma coisa sai com `make create-totp user=<usuário>`, depois de apagar o dispositivo antigo.
 - **Tentativas erradas:** o axes tranca o par usuário + IP por uma hora depois de 5 erros. O teto por usuário tranca a conta depois de 50 erros numa hora, vindos de qualquer rede, e zera no primeiro acerto. Para destrancar um par do axes antes da hora, apague a tentativa em *Access attempts*, no painel.
 

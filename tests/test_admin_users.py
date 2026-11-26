@@ -2,7 +2,9 @@ import re
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import Permission
+from django.test import Client
 from django.urls import reverse
 
 from app.models import Group
@@ -30,6 +32,53 @@ def test_admin_desativa_os_usuarios_selecionados(client):
     assert not User.objects.filter(pk__in=[first.pk, second.pk, already_inactive.pk], is_active=True).exists()
     # O que já estava inativo não entra na conta.
     assert '2 usuário(s) desativado(s) com sucesso.' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_admin_desloga_os_usuarios_selecionados(client):
+    target = User.objects.create_user(username='alvo', password='senha')
+    bystander = User.objects.create_user(username='outro', password='senha')
+    target_client, bystander_client = Client(), Client()
+    target_client.force_login(target)
+    bystander_client.force_login(bystander)
+    home = reverse('app:home')
+    assert target_client.get(home).status_code == 200
+    sign_in(client, User.objects.create_superuser(username='admin', password='senha'))
+
+    response = client.post(reverse('admin:app_user_changelist'), {
+        'action': 'logout_users',
+        '_selected_action': [target.pk],
+        'index': '0',
+    }, follow=True)
+
+    assert '1 usuário(s) deslogado(s) com sucesso.' in response.content.decode()
+    # A sessão do alvo, que vive no cache, deixa de valer na próxima requisição
+    assert target_client.get(home).url.startswith(reverse('app:login'))
+    assert bystander_client.get(home).status_code == 200
+    # Depois de deslogado, o usuário entra de novo normalmente
+    target_client.force_login(User.objects.get(pk=target.pk))
+    assert target_client.get(home).status_code == 200
+
+
+@pytest.mark.django_db
+def test_admin_que_se_desloga_mantem_a_sessao_que_esta_usando(client):
+    admin_user = User.objects.create_superuser(username='admin', password='senha')
+    other_session = Client()
+    sign_in(other_session, admin_user)
+    sign_in(client, admin_user)
+    changelist = reverse('admin:app_user_changelist')
+
+    client.post(changelist, {'action': 'logout_users', '_selected_action': [admin_user.pk], 'index': '0'})
+
+    assert client.get(changelist).status_code == 200
+    assert other_session.get(changelist).status_code == 302
+
+
+@pytest.mark.django_db
+def test_quem_ja_estava_logado_nao_cai_quando_o_campo_chega():
+    # Na versão 0 o hash da sessão é o mesmo do Django, de antes do campo existir
+    user = User.objects.create_user(username='colaborador', password='senha')
+    assert user.get_session_auth_hash() == AbstractBaseUser.get_session_auth_hash(user)
 
 
 @pytest.fixture
