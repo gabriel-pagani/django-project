@@ -66,6 +66,10 @@ media_root
 # Rascunho fora do versionamento
 /temp
 
+# Documentação: não é usada no build nem em runtime
+**/docs/
+**/*.md
+
 # Postgres data volume
 /database
 
