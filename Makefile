@@ -2,7 +2,7 @@ MAKEFLAGS += --no-print-directory
 
 COMPOSE = docker compose -f deploy/docker-compose.yml
 
-# Na primeira subida ainda não há banco para copiar: make build-system backup=no.
+# Na primeira subida ainda não há banco para copiar: make build backup=no.
 backup ?= yes
 
 # As tags das imagens (postgres:18, python:3.12-slim-trixie...) recebem as
@@ -11,23 +11,23 @@ backup ?= yes
 #
 # O nginx guarda o IP do django e só lê o http.conf ao subir: sem recriá-lo, ele
 # continua apontando para o container antigo e com a configuração antiga.
-build-system:
-	@$(MAKE) maybe-backup-system \
+build:
+	@$(MAKE) maybe-backup \
 		&& $(COMPOSE) pull --ignore-buildable \
 		&& $(COMPOSE) build --pull \
 		&& $(COMPOSE) up -d \
 		&& $(COMPOSE) up -d --force-recreate nginx
 
-start-system:
+start:
 	@$(COMPOSE) up -d
 
-stop-system:
+stop:
 	@$(COMPOSE) down
 
-restart-system:
+restart:
 	@$(COMPOSE) down && $(COMPOSE) up -d
 
-reset-system-cache:
+reset-cache:
 	@$(COMPOSE) exec redis redis-cli FLUSHDB
 
 # Os backups só podem ser lidos pelo dono: o dump tem os hashes das senhas.
@@ -41,12 +41,12 @@ backup-media:
 	$(COMPOSE) exec -T django sh -c 'tar czf - -C /app/media_root .' > "$$FILE.tmp" \
 		&& mv "$$FILE.tmp" "$$FILE" || { rm -f "$$FILE.tmp"; exit 1; }
 
-backup-system:
+backup:
 	@$(MAKE) backup-database && $(MAKE) backup-media
 
-maybe-backup-system:
+maybe-backup:
 	@case "$(backup)" in \
-		yes|true|on|1) $(MAKE) backup-system ;; \
+		yes|true|on|1) $(MAKE) backup ;; \
 		no|false|off|0) echo "backup=$(backup): pulando o backup" ;; \
 		*) echo "backup=$(backup): use yes ou no" >&2; exit 1 ;; \
 	esac
@@ -82,7 +82,7 @@ create-app-role:
 protect-login:
 	@$(COMPOSE) run --rm --no-deps -T -v "$(PWD)/scripts:/app/scripts" tools python scripts/cloudflare_login_rule.py $(args)
 
-make-migrations:
+migrations:
 	@$(COMPOSE) run --rm --no-deps -v "$(PWD)/app:/app/app" django python manage.py makemigrations $(app)
 
 # Depois que o requirements.txt muda: $(COMPOSE) build tests
@@ -96,10 +96,10 @@ create-superuser:
 create-totp:
 	@$(COMPOSE) exec -T -e TOTP_USER="$(user)" django python manage.py shell < scripts/create_totp.py
 
-container-terminal:
+terminal:
 	@$(COMPOSE) exec $(container) sh
 
-containers-logs:
+logs:
 	@$(COMPOSE) logs -f $(container)
 
 django-shell:

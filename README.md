@@ -139,16 +139,16 @@ Rodar de novo é seguro: a regra é encontrada pela descrição (`<PROJECT_NAME>
 ```sh
 git clone <repositório> && cd <pasta>
 cp deploy/.env.example deploy/.env    # e preencha
-make build-system backup=no           # na 1ª vez ainda não há banco para copiar
-make create-app-role                  # cria o usuário do app no Postgres
-make create-superuser                 # cria o administrador e mostra o QR Code do TOTP
+make build backup=no         # na 1ª vez ainda não há banco para copiar
+make create-app-role         # cria o usuário do app no Postgres
+make create-superuser        # cria o administrador e mostra o QR Code do TOTP
 ```
 
-Até o `make create-app-role` rodar, o container `django` fica reiniciando, com `password authentication failed` no log (`make containers-logs container=django`). Isso é esperado num banco novo. Quando o usuário existe, o django sobe sozinho e roda as migrations.
+Até o `make create-app-role` rodar, o container `django` fica reiniciando, com `password authentication failed` no log (`make logs container=django`). Isso é esperado num banco novo. Quando o usuário existe, o django sobe sozinho e roda as migrations.
 
 O `make create-superuser` pede usuário e senha e depois mostra no terminal o QR Code do aplicativo autenticador (Google Authenticator, Aegis, 1Password...). Escaneie e guarde a chave em lugar seguro: sem ela e sem o aplicativo, o acesso ao painel se perde.
 
-Nas próximas atualizações, basta um `make build-system`. Ele faz um backup, baixa as versões novas das imagens, reconstrói e sobe tudo.
+Nas próximas atualizações, basta um `make build`. Ele faz um backup, baixa as versões novas das imagens, reconstrói e sobe tudo.
 
 ## Deploy automático pelo GitHub Actions
 
@@ -189,7 +189,7 @@ Ele não propõe:
 
 Para receber também os alertas de segurança, ative **Settings → Code security** (ou **Advanced Security**) **→ Dependabot alerts** e **Dependabot security updates**.
 
-Tags como `postgres:18` e `redis:8-alpine` recebem correções sem mudar de nome, e o Dependabot não as vê. O `make build-system` baixa essas imagens de novo a cada deploy.
+Tags como `postgres:18` e `redis:8-alpine` recebem correções sem mudar de nome, e o Dependabot não as vê. O `make build` baixa essas imagens de novo a cada deploy.
 
 O supercronic, no [deploy/Dockerfile](deploy/Dockerfile), está fixo numa versão e num checksum e é atualizado à mão.
 
@@ -221,8 +221,8 @@ Sem `AUTH_LDAP_SERVER_URI`, o AD fica de fora e só valem os usuários locais.
 ## Backups
 
 ```sh
-make backup-system          # banco (.sql) + arquivos enviados (media-*.tar.gz) em backups/
-make check-backup           # restaura o .sql mais recente num Postgres descartável e mostra o que voltou
+make backup         # banco (.sql) + arquivos enviados (media-*.tar.gz) em backups/
+make check-backup   # restaura o .sql mais recente num Postgres descartável e mostra o que voltou
 make check-backup file=backups/20260101-000000.sql
 ```
 
@@ -230,7 +230,7 @@ Os backups ficam em `backups/`, legíveis só pelo dono, porque o dump contém o
 
 Para um backup diário, agende no cron do servidor:
 ```cron
-0 0 * * * cd /caminho/do/projeto && make backup-system >> backups/backup.log 2>&1
+0 0 * * * cd /caminho/do/projeto && make backup >> backups/backup.log 2>&1
 ```
 
 **Restaurar:** suba um banco vazio e rode:
@@ -241,7 +241,7 @@ make create-app-role    # o dump volta com as tabelas do superusuário
 
 ## Tarefas agendadas
 
-O serviço `scheduler` roda os comandos do [deploy/crontab](deploy/crontab) com o supercronic, no horário de Brasília. Tarefa nova é uma linha no arquivo, seguida de `make build-system`:
+O serviço `scheduler` roda os comandos do [deploy/crontab](deploy/crontab) com o supercronic, no horário de Brasília. Tarefa nova é uma linha no arquivo, seguida de `make build`:
 
 ```cron
 # minuto hora dia mês dia-da-semana comando
@@ -292,26 +292,26 @@ No Git Bash do Windows, ponha `MSYS_NO_PATHCONV=1` antes do comando e troque `$P
 
 **Migrations novas:**
 ```sh
-make make-migrations app=app
+make migrations app=app
 ```
-Depois do `make build-system`, as migrations rodam sozinhas.
+Depois do `make build`, as migrations rodam sozinhas.
 
 ## Comandos do Makefile
 
 | Comando | O que faz |
 |---|---|
-| `make build-system` | Backup, baixa as imagens novas, reconstrói e sobe tudo. `backup=no` pula o backup. |
-| `make start-system` / `stop-system` / `restart-system` | Sobe, para e reinicia os containers. **Sobe também o túnel.** |
-| `make reset-system-cache` | Esvazia o Redis: todo mundo precisa entrar de novo. |
-| `make backup-database` / `backup-media` / `backup-system` | Backup do banco, dos arquivos enviados ou dos dois. |
+| `make build` | Backup, baixa as imagens novas, reconstrói e sobe tudo. `backup=no` pula o backup. |
+| `make start` / `stop` / `restart` | Sobe, para e reinicia os containers. **Sobe também o túnel.** |
+| `make reset-cache` | Esvazia o Redis: todo mundo precisa entrar de novo. |
+| `make backup-database` / `backup-media` / `backup` | Backup do banco, dos arquivos enviados ou dos dois. |
 | `make check-backup [file=...]` | Restaura um backup num Postgres descartável e mostra o que voltou. |
 | `make restore-database file=...` | Restaura um `.sql` no banco do sistema. |
 | `make create-app-role` | Cria ou atualiza o usuário do app no Postgres. |
 | `make create-superuser` | Cria um superusuário e o TOTP dele. |
 | `make create-totp user=...` | Cria o TOTP de um usuário pelo terminal. |
 | `make protect-login [args=remove]` | Cria ou remove o desafio da Cloudflare no login. |
-| `make make-migrations [app=...]` | Gera as migrations. |
+| `make migrations [app=...]` | Gera as migrations. |
 | `make run-tests [args=...]` | Roda os testes. |
 | `make django-shell` | Shell do Django. |
-| `make container-terminal container=...` | Terminal dentro de um container. |
-| `make containers-logs [container=...]` | Acompanha os logs. |
+| `make terminal container=...` | Terminal dentro de um container. |
+| `make logs [container=...]` | Acompanha os logs. |
