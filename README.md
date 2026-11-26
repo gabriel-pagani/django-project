@@ -302,7 +302,6 @@ Depois do `make build-system`, as migrations rodam sozinhas.
 |---|---|
 | `make build-system` | Backup, baixa as imagens novas, reconstrói e sobe tudo. `backup=no` pula o backup. |
 | `make start-system` / `stop-system` / `restart-system` | Sobe, para e reinicia os containers. **Sobe também o túnel.** |
-| `make reset-system` | Backup e depois **apaga o banco e os volumes** e começa do zero. |
 | `make reset-system-cache` | Esvazia o Redis: todo mundo precisa entrar de novo. |
 | `make backup-database` / `backup-media` / `backup-system` | Backup do banco, dos arquivos enviados ou dos dois. |
 | `make check-backup [file=...]` | Restaura um backup num Postgres descartável e mostra o que voltou. |

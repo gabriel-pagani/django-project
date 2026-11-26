@@ -27,15 +27,6 @@ stop-system:
 restart-system:
 	@$(COMPOSE) down && $(COMPOSE) up -d
 
-# O volume novo do Postgres nasce só com o superusuário: o usuário do app é
-# criado antes de o django subir.
-reset-system:
-	@$(MAKE) maybe-backup-system \
-		&& $(COMPOSE) down -v \
-		&& $(COMPOSE) up -d --wait postgres \
-		&& $(MAKE) create-app-role \
-		&& $(MAKE) build-system backup=no
-
 reset-system-cache:
 	@$(COMPOSE) exec redis redis-cli FLUSHDB
 
